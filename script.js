@@ -29,26 +29,14 @@ class WorkTray {
         this.timeOut = (new Date).toString().slice(0, 24),
         this.quantityIn = 0,
         this.weightIn = 0,
-        this.timeIn = ''
+        this.timeIn = '',
+        this.open = true
     }
 
     save = () => {
-        localStorage.worktray = localStorage.worktray + 
-        `{"id": "${localStorage.worktrayId}", ` +
-        `"costCode": "${this.costCode}", ` +
-        `"tray": "${this.tray}", ` +
-        `"employee": "${this.employee}", ` +
-        `"description": "${this.description}", ` +
-        `"stage": "${this.stage}", ` +
-        `"quantityOut": "${this.quantityOut}", ` +
-        `"weightOut": "${this.weightOut}", ` +
-        `"timeOut": "${this.timeOut}", ` +
-        `"quantityIn": "${this.quantityIn}", ` + 
-        `"weightIn": "${this.weightIn}", ` +
-        `"timeIn": "${this.timeIn}"};`
-
+        this.id = localStorage.worktrayId;
+        localStorage.worktray = localStorage.worktray + JSON.stringify(this) + ";";
         incrementID('worktray');
-    
     }
 
 }
@@ -61,8 +49,7 @@ class Employee {
     }
 
     save = () => {
-        localStorage.employee = localStorage.employee +
-            `{"name": "${this.name}", "id": "${this.id}"};`;
+        localStorage.employee = localStorage.employee + JSON.stringify(this) + ';';
     }
 
 }
@@ -111,9 +98,8 @@ class Tray {
     }
 
     save = () => {
-        localStorage.tray = localStorage.tray +
-            `{"id": "${localStorage.trayId}", "number": ` +
-            `"${this.number}", "weight": "${this.weight}"};`;
+        this.id = localStorage.trayId;
+        localStorage.tray = localStorage.tray + JSON.stringify(this) + ';';
         incrementID('tray');
     }
 
@@ -165,9 +151,8 @@ class CostCode {
     }
 
     save = () => {
-        localStorage.costCode = localStorage.costCode +
-            `{"id": "${localStorage.costCodeId}", "code": "${this.code}", ` + 
-            `"item":"${this.item}", "metal": "${this.metal}", "month": "${this.month}"};`;
+        this.id = localStorage.costCodeId;
+        localStorage.costCode = localStorage.costCode + JSON.stringify(this) + ';';
         incrementID('costCode');
     }    
 
@@ -217,9 +202,8 @@ class Stage {
     }
 
     save = () => {
-        localStorage.stage = localStorage.stage +
-            `{"id": "${localStorage.stageId}", "number": "${this.number}", ` + 
-            `"description": "${this.description}"};`;
+        this.id = localStorage.stageId;
+        localStorage.stage = localStorage.stage + JSON.stringify(this)
         incrementID('stage');
     }    
 
@@ -260,8 +244,7 @@ function validStageArray() {
     return output;
 }
 
-
-
+// ---------------------------------------
 
 function createWorkTray(costCode, trayNumber, employee, description, stage, quantity, weight) {
     const worktray = new WorkTray(
@@ -342,7 +325,7 @@ function getWorkTrayData() {
 
 
 
-// TESTS
+/* Tests / Data Validation */
 
 function validateWorkTrayData(costCode, trayNumber, employee, description, stage, quantity, weight) {
     if (
@@ -503,4 +486,13 @@ renderButton('SAVE' );
 
 const button = document.querySelector('#save-button');
 button.addEventListener('click', getWorkTrayData)
+
+
+/*
+So basically you work all day until everything is clear. Usually there is something left over that isn't clear. 
+    1. You take the objects that are clear and export them to a csv file (or something)
+    2. You take the objects that are not clear 
+    3. Overwrite the entire worktray container with the return from 2 so that they are the only jobs left open
+*/
+
 
