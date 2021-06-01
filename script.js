@@ -142,12 +142,13 @@ function validTrayArray() {
 
 class CostCode {
 
-    constructor(code, item, metal, month) {
+    constructor(code, item, metal, month, active) {
         this.id = '',
         this.code = code,
         this.item = item,
         this.metal = metal, 
-        this.month = month
+        this.month = month,
+        this.active = active
     }
 
     save = () => {
@@ -188,7 +189,11 @@ function getAllCostCodes() {
 function validCostCodeArray() {
     let output = [];
     for (let value of getAllCostCodes()) {
-        output.push(value.code)
+        if (value.code === "") {
+            output.push(value.metal)
+        } else {
+            output.push(value.code)
+        }
     }
     return output;
 }
@@ -203,7 +208,7 @@ class Stage {
 
     save = () => {
         this.id = localStorage.stageId;
-        localStorage.stage = localStorage.stage + JSON.stringify(this)
+        localStorage.stage = localStorage.stage + JSON.stringify(this) + ';';
         incrementID('stage');
     }    
 
@@ -404,7 +409,7 @@ storageInit();
 function loadData() {
 
     let data = [
-        
+                
     ]
 
     for (let value of data) {
@@ -449,6 +454,23 @@ function renderStageSelect() {
     }    
 }
 
+function renderTraySelect() {
+    const main = document.getElementById('main-content');
+    main.innerHTML += 
+    `
+    <div class="form-group">
+        <label for="tray">Tray:</label>
+        <select class="form-control" id="tray">
+            <option value="" selected disabled>Choose:</option>
+        </select>
+    </div>
+    `
+    const list = document.getElementById('tray');
+    for (let value of getAllTrays()) {
+        list.innerHTML += `<option value="${value.number}">${value.number} (${value.weight} dwt)</option>`
+    }     
+}
+
 function renderInput(label, id) {
     const main = document.getElementById('main-content');
     main.innerHTML += 
@@ -475,10 +497,10 @@ function renderButton(text, option) {
 renderEmployeeSelect();
 renderStageSelect();
 
-renderInput('Cost Code', 'cost-code');
+renderInput('Cost Code / Metal', 'cost-code');
 renderInput('Description', 'description');
 
-renderInput('Tray #', 'tray');
+renderTraySelect();
 renderInput('Quantity Out', 'quantity-out');
 renderInput('Weight Out', 'weight-out');
 
@@ -489,10 +511,58 @@ button.addEventListener('click', getWorkTrayData)
 
 
 /*
+the below describes the "post" function we would want
+
 So basically you work all day until everything is clear. Usually there is something left over that isn't clear. 
     1. You take the objects that are clear and export them to a csv file (or something)
     2. You take the objects that are not clear 
     3. Overwrite the entire worktray container with the return from 2 so that they are the only jobs left open
 */
 
+function removeChildren(parent) {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
 
+function renderOpenWorkTrayScreen() {
+    const main = document.getElementById('main-content');
+    removeChildren(main);
+    main.innerHTML +=
+    `
+        <h1 style="float: right;">Open Worktrays</h1>
+        <a onclick="location.reload()"><h1>Create Worktray</h1></a>
+    `
+}
+
+
+function postEndOfDay() {
+
+}
+
+function exportCsv(data) {
+// 'data' is an array of WorkTray objects
+
+    var csv = 'record,cost_code_or_metal,description,employee,quantity_in,quantity_out,stage,time_in,time_out,tray,weight-in,weight_out\n';
+    data.forEach(function(row) {
+        csv = csv + row.id + "," + 
+        row.costCode + "," +
+        row.description + "," +
+        row.employee + "," +
+        row.quantityIn + "," +
+        row.quantityOut + "," +
+        row.stage + "," +
+        row.timeIn + "," +
+        row.timeOut + "," +
+        row.tray + "," +
+        row.weightIn + "," +
+        row.weightOut + "," + "\n"
+    });
+
+    let hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'people.csv';
+    hiddenElement.click();
+
+}
